@@ -330,7 +330,7 @@ def get_subtitles(mkv):
         tracks_to_read = {}
         tracks = get_element(segment, "Tracks")
         for track in get_dicts(tracks, "TrackEntry"):
-            if track["CodecID"].value != b'S_TEXT/ASS':
+            if track["CodecID"].value.encode() != b'S_TEXT/ASS':
                 continue
 
             compression = False
@@ -402,7 +402,7 @@ def get_fonts(mkv):
     for segment in get_elements(mkv, "Segment"):
         for attachments in get_elements(segment, "Attachments"):
             for attachment in get_dicts(attachments, "AttachedFile"):
-                if attachment["FileMimeType"].value not in FONT_MIMETYPES:
+                if attachment["FileMimeType"].value.encode() not in FONT_MIMETYPES:
                     print(f"Ignoring non-font attachment {attachment['FileName'].value}")
                     continue
 
@@ -434,7 +434,9 @@ May be a Matroska file with fonts attached, a directory containing font files, o
 
     schema = ebmlite.loadSchema("matroska.xml")
 
+    #print("args.subtitles: ", args.subtitles)
     if is_mkv(args.subtitles):
+        #print("IS MKV")
         mkv = schema.load(args.subtitles)
         subtitles = get_subtitles(mkv)
         fontlist = get_fonts(mkv)
