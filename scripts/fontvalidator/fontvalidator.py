@@ -339,9 +339,16 @@ def get_subtitles(mkv):
                     compression = True
 
             try:
-                track_name = track["Name"].value
+                track_name = track["Language"].value + " - " + track["Name"].value
             except KeyError:
-                track_name = "Unknown"
+                try:
+                    track_name = track["Language"].value
+                except:
+                    try:
+                        track_name = track["Name"].value
+                    except:
+                        track_name = "Unknown"
+
 
             assdoc = ass.parse(io.TextIOWrapper(io.BytesIO(track["CodecPrivate"].value),
                                                 encoding='utf_8_sig'))
@@ -449,7 +456,9 @@ May be a Matroska file with fonts attached, a directory containing font files, o
         for additional_fonts in args.additional_fonts:
             path = pathlib.Path(additional_fonts)
             if path.is_dir():
-                fontlist.extend((p.name, str(p)) for p in path.iterdir() if p.is_file())
+                fontlist.extend((p.name, str(p)) for p in path.iterdir() 
+                                if p.is_file() 
+                                and p.suffix.lower() in [".otf", ".ttf", '.ttc'])
             elif is_mkv(additional_fonts):
                 fontmkv = schema.load(additional_fonts)
                 fontlist.extend(get_fonts(fontmkv))
