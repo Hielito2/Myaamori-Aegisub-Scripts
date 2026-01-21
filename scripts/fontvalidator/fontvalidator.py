@@ -445,23 +445,22 @@ May be a Matroska file with fonts attached, a directory containing font files, o
             subtitles = [(os.path.basename(args.subtitles), ass.parse(f))]
         fontlist = []
 
-    for additional_fonts in args.additional_fonts:
-        path = pathlib.Path(additional_fonts)
-        if path.is_dir():
-            fontlist.extend((p.name, str(p)) for p in path.iterdir() if p.is_file())
-        elif is_mkv(additional_fonts):
-            fontmkv = schema.load(additional_fonts)
-            fontlist.extend(get_fonts(fontmkv))
-        else:
-            fontlist.append((path.name, additional_fonts))
+    if args.additional_fonts is not []:
+        for additional_fonts in args.additional_fonts:
+            path = pathlib.Path(additional_fonts)
+            if path.is_dir():
+                fontlist.extend((p.name, str(p)) for p in path.iterdir() if p.is_file())
+            elif is_mkv(additional_fonts):
+                fontmkv = schema.load(additional_fonts)
+                fontlist.extend(get_fonts(fontmkv))
+            else:
+                fontlist.append((path.name, additional_fonts))
 
-    issues = False
     fonts = FontCollection(fontlist)
     for name, doc in subtitles:
         print(f"Validating track {name}")
-        issues = issues or validate_fonts(doc, fonts, args.ignore_drawings, args.warn_fullname_mismatch)
+        validate_fonts(doc, fonts, args.ignore_drawings, args.warn_fullname_mismatch)
 
-    return issues
 
 if __name__ == "__main__":
     sys.exit(main())
